@@ -7,6 +7,7 @@
     "@remix-run/fetch-router": "^0.12.0",
     "@remix-run/form-data-middleware": "^0.1.0",
     "@remix-run/headers": "^0.17.2",
+    "@remix-run/html-template": "^0.3.0",
     "@remix-run/logger-middleware": "^0.1.0",
     "@remix-run/method-override-middleware": "^0.1.1",
     "@remix-run/node-fetch-server": "^0.12.0",
