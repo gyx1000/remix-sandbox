@@ -13,4 +13,5 @@ export let routes = route({
     create: '/create',
     list: { method: 'GET', pattern: '/list' },
   }),
+  logout: '/logout',
 })
