@@ -37,9 +37,17 @@ let channelsListView = () => {
     <h2>Channels</h2>
     <iframe src="/chat/create"></iframe>
     <ul>
-      ${getChannels().map((c) => html`<li>${c.name}</li>`)}
+      ${getChannels().map(
+        (c) =>
+          html`<li>
+            <a href="#" onclick="changeChannel('${c.slug}'); return false">${c.name}</a>
+          </li>`,
+      )}
     </ul>
     <script>
+      function changeChannel(slug) {
+        window.parent.postMessage({ type: 'CHANGE_CHANNEL', slug })
+      }
       window.addEventListener('message', (event) => {
         let { type } = event.data ?? {}
         if (type === 'CHANNEL_ADDED') {
@@ -55,8 +63,12 @@ export let chat = {
   handlers: {
     slug: {
       handlers: {
-        messages: () => {
-          return new Response('chat index')
+        messages: ({ params }) => {
+          return render(html`
+            <h2>Messages of ${params.slug}</h2>
+            <div></div>
+            <iframe src="./post"></iframe>
+          `)
         },
         post: {
           index: () => {
@@ -71,11 +83,13 @@ export let chat = {
                 JSON.stringify({
                   channel: 'global',
                   nickName: session.get('nickName'),
-                  message: formData.get('message'),
+                  message: html`${formData.get('message') as string}`,
                   date: new Date(),
                 }),
                 nextEventId(),
               )
+            } else {
+              // TODO: register user to this channel
             }
 
             return render(postView())
