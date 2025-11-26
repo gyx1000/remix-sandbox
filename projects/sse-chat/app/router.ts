@@ -8,6 +8,8 @@ import { createCookieSessionStorage } from '@remix-run/session/cookie-storage'
 import { session } from '@remix-run/session-middleware'
 import { createRedirectResponse } from '@remix-run/response/redirect'
 import { formData } from '@remix-run/form-data-middleware'
+import { logger } from '@remix-run/logger-middleware'
+import { staticFiles } from '@remix-run/static-middleware'
 
 let sessionCookie = createCookie('__gyx_s', {
   secrets: ['s3cr3t'],
@@ -18,6 +20,8 @@ let sessionStorage = createCookieSessionStorage()
 
 export let router = createRouter({
   middleware: [
+    logger(),
+    staticFiles('./public'),
     formData(),
     session(sessionCookie, sessionStorage),
     ({ session, url }) => {

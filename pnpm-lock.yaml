@@ -27,8 +27,24 @@ importers:
         specifier: ^8.40.0
         version: 8.48.0(eslint@9.39.1)(typescript@5.9.3)
 
+  packages/sse:
+    dependencies:
+      '@remix-run/interaction':
+        specifier: ^0.3.0
+        version: 0.3.0
+    devDependencies:
+      '@types/node':
+        specifier: ^24.6.0
+        version: 24.10.1
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   projects/sse-chat:
     dependencies:
+      '@gyx1000/remix-sse':
+        specifier: workspace:*
+        version: link:../../packages/sse
       '@remix-run/cookie':
         specifier: ^0.5.0
         version: 0.5.0(@remix-run/headers@0.17.2)
@@ -42,6 +58,9 @@ importers:
         specifier: ^0.17.2
         version: 0.17.2
       '@remix-run/html-template':
+        specifier: ^0.3.0
+        version: 0.3.0
+      '@remix-run/interaction':
         specifier: ^0.3.0
         version: 0.3.0
       '@remix-run/logger-middleware':
@@ -320,6 +339,9 @@ packages:
 
   '@remix-run/html-template@0.3.0':
     resolution: {integrity: sha512-aAMx68udtIk0fmCpCXHYscVeCDsRVEmEgh4XvtusPr3vkHu3jn4gx5oAxgsPXPdDmmD/d75SYyI0m/F+aLz5iQ==}
+
+  '@remix-run/interaction@0.3.0':
+    resolution: {integrity: sha512-lJ/wOkXJOa6913j7x9LSfx7q+5b3FQCd+uzh36G3oUjL0/4AcI1Ch3LiJmHTNmrlHgKHlb3D9idHjpOrpbljyA==}
 
   '@remix-run/lazy-file@3.8.0':
     resolution: {integrity: sha512-MqIjiEgtzSZMNFqkFO7VL6wKkkopRBxjscXlFJLybmQrD9w9qRJ0TMMEYIuIHXiSD1R9HqlxU8rsSTDMa4mOyA==}
@@ -969,6 +991,8 @@ snapshots:
   '@remix-run/headers@0.17.2': {}
 
   '@remix-run/html-template@0.3.0': {}
+
+  '@remix-run/interaction@0.3.0': {}
 
   '@remix-run/lazy-file@3.8.0':
     dependencies:

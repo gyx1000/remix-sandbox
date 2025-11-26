@@ -6,6 +6,7 @@ import { html } from '@remix-run/html-template'
 import { defaultDict } from '../utils/data'
 import { createRedirectResponse } from '@remix-run/response/redirect'
 import type { FieldError, FormError, FormInitial } from '../utils/form'
+import { globalChannel, nextEventId } from '../store/sse'
 
 let view = (
   initial: FormInitial = defaultDict<string>(() => ''),
@@ -34,13 +35,12 @@ export let auth = {
     return view()
   },
   action: ({ formData, session }) => {
-    let nickName = (formData.get('nick_name') || '') as string
+    let nickName = ((formData.get('nick_name') ?? '') as string).trim()
     let errors: FormError = defaultDict<FieldError[]>(() => [])
     let initial: FormInitial = defaultDict<string>(() => '')
 
     initial.nick_name = nickName
 
-    // TODO: check multi-space, etc.. etc..
     if (nickName == '') {
       errors['nick_name'].push({ message: `Could not be empty` })
     }
@@ -48,6 +48,12 @@ export let auth = {
     if (Object.keys(errors).length == 0) {
       session.set('nickName', nickName)
       session.set('uuid', crypto.randomUUID())
+      // inform every session that a new user joined
+      globalChannel.broadcast(
+        'join',
+        JSON.stringify({ nickName: session.get('nickName') }),
+        nextEventId(),
+      )
       return createRedirectResponse(routes.home.href())
     }
 
