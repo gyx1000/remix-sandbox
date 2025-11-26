@@ -16,19 +16,13 @@ let postView = () => {
   `
 }
 
-let addChannelView = (added: boolean = false) => {
-  let addedScript = html`
-    <script>
-      window.parent.postMessage({ type: 'CHANNEL_ADDED' })
-    </script>
-  `
+let addChannelView = () => {
   return html`
     Add a channel
     <form method="POST">
       <input type="text" name="channel_name" />
       <button type="submit" name="_add">add</button>
     </form>
-    ${added ? addedScript : ''}
   `
 }
 
@@ -40,21 +34,10 @@ let channelsListView = () => {
       ${getChannels().map(
         (c) =>
           html`<li>
-            <a href="#" onclick="changeChannel('${c.slug}'); return false">${c.name}</a>
+            <a href="/chat/${c.slug}/messages" target="channel_messages">${c.name}</a>
           </li>`,
       )}
     </ul>
-    <script>
-      function changeChannel(slug) {
-        window.parent.postMessage({ type: 'CHANGE_CHANNEL', slug })
-      }
-      window.addEventListener('message', (event) => {
-        let { type } = event.data ?? {}
-        if (type === 'CHANNEL_ADDED') {
-          window.location.reload()
-        }
-      })
-    </script>
   `
 }
 
@@ -151,7 +134,7 @@ export let chat = {
           nextEventId(),
         )
 
-        return render(addChannelView(true))
+        return render(addChannelView())
       },
     },
     list: () => {

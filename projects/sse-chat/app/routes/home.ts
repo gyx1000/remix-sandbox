@@ -9,24 +9,18 @@ export let home = () => {
       <h1>Home</h1>
       <a href="${routes.logout.href()}">Logout</a>
       <iframe id="channels_list" src="${routes.chat.list.href()}"></iframe>
-      <iframe id="channel" src="/chat/global/messages"></iframe>
+      <iframe name="channel_messages" id="channel" src="/chat/global/messages"></iframe>
       <script>
         let channelsListFrame = document.getElementById('channels_list')
         let channelFrame = document.getElementById('channel')
 
         let es = new EventSource('${routes.chat.events.href()}')
 
-        window.addEventListener('message', (event) => {
-          let { type, slug } = event.data ?? {}
-          if (type === 'CHANGE_CHANNEL') {
-            channelFrame.src = '/chat/' + slug + '/messages'
-          }
-        })
-
         es.addEventListener('new_channel', (event) => {
           channelsListFrame.contentWindow.postMessage({
             type: 'CHANNEL_ADDED',
           })
+          channelsListFrame.contentWindow.location.reload()
         })
         es.addEventListener('message', (event) => {
           let { channel, nickName, message, date } = JSON.parse(event.data ?? {})
