@@ -1,3 +1,4 @@
+import type { SseEvent } from './event'
 import type { SseSession } from './session'
 import { on, TypedEventTarget } from '@remix-run/interaction'
 
@@ -14,39 +15,48 @@ class SseChannelEvent extends Event {
   }
 }
 
-export let createSseChannel = () => {
-  let sessions = new Set<SseSession>()
-  let events = new TypedEventTarget<SseChannelEventMap>()
+export class SseChannel extends TypedEventTarget<SseChannelEventMap> {
+  #sessions: Set<SseSession>
 
-  return Object.assign(events, {
-    register: (session: SseSession) => {
-      let cleanup = () => {
-        dispose()
-        sessions.delete(session)
-        events.dispatchEvent(new SseChannelEvent('unregister', session))
-      }
+  constructor() {
+    super()
+    this.#sessions = new Set()
+  }
 
-      if (sessions.has(session)) {
-        console.log(`Already registered`)
-        return
-      }
-      sessions.add(session)
-      events.dispatchEvent(new SseChannelEvent('register', session))
-      let dispose = on(session, {
-        disconnected: {
-          once: true,
-          listener: cleanup,
+  broadcast(event: SseEvent) {
+    for (let session of this.#sessions) {
+      if (!session.isConnected) continue
+      session.send(event)
+    }
+  }
+
+  get count() {
+    return this.#sessions.size
+  }
+
+  register(session: SseSession) {
+    if (this.#sessions.has(session)) return
+    this.#sessions.add(session)
+    let dispose = on(session, {
+      disconnected: {
+        once: true,
+        listener: () => {
+          dispose()
+          this.unregister(session)
         },
-      })
-    },
-    broadcast: (event: string, data: string, id: string = crypto.randomUUID()) => {
-      for (let session of sessions) {
-        if (!session.connected) continue
-        session.push(event, data, id)
-      }
-    },
-    get count() {
-      return sessions.size
-    },
-  })
+      },
+    })
+
+    this.dispatchEvent(new SseChannelEvent('register', session))
+  }
+
+  unregister(session: SseSession) {
+    if (!this.#sessions.has(session)) return
+    this.#sessions.delete(session)
+    this.dispatchEvent(new SseChannelEvent('unregister', session))
+  }
+}
+
+export let createSseChannel = () => {
+  return new SseChannel()
 }

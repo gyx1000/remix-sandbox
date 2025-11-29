@@ -1,27 +1,30 @@
 import type { BuildRouteHandler, RouteHandlers } from '@remix-run/fetch-router'
 import { routes } from '../../routes'
 import { render } from '../utils/render'
-import { layout } from '../components/layout'
-import { html } from '@remix-run/html-template'
+import { Layout } from '../components/layout'
 import { defaultDict } from '../utils/data'
 import { createRedirectResponse } from '@remix-run/response/redirect'
 import type { FieldError, FormError, FormInitial } from '../utils/form'
 import { globalChannel, nextEventId } from '../store/sse'
+import { SseEvent } from '@gyx1000/remix-sse'
 
 let view = (
   initial: FormInitial = defaultDict<string>(() => ''),
   errors: FormError = defaultDict<FieldError[]>(() => []),
 ) => {
   return render(
-    layout(html`
+    <Layout>
       <h1>Choose your nickname</h1>
       <form method="POST">
-        <label>Nickname</label
-        ><input type="text" name="nick_name" value="${initial?.nick_name}" /><br />
-        <b>${errors?.nick_name.map((e) => e.message).join(',')}</b>
-        <button type="submit" name="_set_nickname">Save</button>
+        <label>Nickname</label>
+        <input type="text" name="nick_name" value={initial?.nick_name} />
+        <br />
+        <b>{errors?.nick_name.map((e) => e.message).join(',')}</b>
+        <button type="submit" name="_set_nickname">
+          Save
+        </button>
       </form>
-    `),
+    </Layout>,
   )
 }
 
@@ -48,12 +51,10 @@ export let auth = {
     if (Object.keys(errors).length == 0) {
       session.set('nickName', nickName)
       session.set('uuid', crypto.randomUUID())
+
       // inform every session that a new user joined
-      globalChannel.broadcast(
-        'join',
-        JSON.stringify({ nickName: session.get('nickName') }),
-        nextEventId(),
-      )
+      let joinEvent = new SseEvent('join').data(JSON.stringify({ nickName })).id(nextEventId())
+      globalChannel.broadcast(joinEvent)
       return createRedirectResponse(routes.home.href())
     }
 

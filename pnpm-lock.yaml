@@ -48,6 +48,12 @@ importers:
       '@remix-run/cookie':
         specifier: ^0.5.0
         version: 0.5.0(@remix-run/headers@0.17.2)
+      '@remix-run/dom':
+        specifier: 0.0.0-experimental-remix-jam.6
+        version: 0.0.0-experimental-remix-jam.6
+      '@remix-run/events':
+        specifier: 0.0.0-experimental-remix-jam.5
+        version: 0.0.0-experimental-remix-jam.5
       '@remix-run/fetch-router':
         specifier: ^0.12.0
         version: 0.12.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.0)
@@ -312,6 +318,12 @@ packages:
     peerDependencies:
       '@remix-run/headers': ^0.17.1
 
+  '@remix-run/dom@0.0.0-experimental-remix-jam.6':
+    resolution: {integrity: sha512-eQguiFB+Qm0EAA1xK1jLew2M9jp2rGcN+tknPv9gQd5nhT+eetwt3BHaYt9UcJWd3+p0g0cBt23CJrQOK2WStQ==}
+
+  '@remix-run/events@0.0.0-experimental-remix-jam.5':
+    resolution: {integrity: sha512-rbKP27/YkLZq0gbCy3QpwaHQzJg41IgbC//8SggPgMtWxZdxkcnkWmQGMLH0xwQcBlZ3yLtZRDQvL+ir4GAA6g==}
+
   '@remix-run/fetch-router@0.12.0':
     resolution: {integrity: sha512-BDG/VepZg2ZJ7wav3HDrB9ZJLpzZONHi9ItOkFMcKsrbm5g7jjrxW5Vdijbbebz12pbJQu6VKTwLVXp/LgFusA==}
     peerDependencies:
@@ -388,6 +400,9 @@ packages:
       '@remix-run/fs': ^0.1.0
       '@remix-run/html-template': ^0.3.0
       '@remix-run/response': ^0.1.0
+
+  '@remix-run/style@0.0.0-experimental-remix-jam.5':
+    resolution: {integrity: sha512-XXCOWiY6lGqeJrGQ47JP5fFFuZXbBsFjBbTu46FNxsox1cny8ZPyZ7C674kX92UimGpOU+zv/lPOoU+ZWGim+w==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -966,6 +981,13 @@ snapshots:
     dependencies:
       '@remix-run/headers': 0.17.2
 
+  '@remix-run/dom@0.0.0-experimental-remix-jam.6':
+    dependencies:
+      '@remix-run/events': 0.0.0-experimental-remix-jam.5
+      '@remix-run/style': 0.0.0-experimental-remix-jam.5
+
+  '@remix-run/events@0.0.0-experimental-remix-jam.5': {}
+
   '@remix-run/fetch-router@0.12.0(@remix-run/headers@0.17.2)(@remix-run/route-pattern@0.15.3)(@remix-run/session@0.4.0)':
     dependencies:
       '@remix-run/headers': 0.17.2
@@ -1034,6 +1056,8 @@ snapshots:
       '@remix-run/html-template': 0.3.0
       '@remix-run/response': 0.1.0(@remix-run/headers@0.17.2)(@remix-run/html-template@0.3.0)
       mrmime: 2.0.1
+
+  '@remix-run/style@0.0.0-experimental-remix-jam.5': {}
 
   '@types/estree@1.0.8': {}
 

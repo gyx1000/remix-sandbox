@@ -1,6 +1,7 @@
-import type { SafeHtml } from '@remix-run/html-template'
+import type { Remix } from '@remix-run/dom'
+import { renderToStream } from '@remix-run/dom/server'
 import { createHtmlResponse } from '@remix-run/response/html'
 
-export let render = (content: SafeHtml) => {
-  return createHtmlResponse(content)
+export let render = (element: Remix.RemixElement, init?: ResponseInit) => {
+  return createHtmlResponse(renderToStream(element), init)
 }

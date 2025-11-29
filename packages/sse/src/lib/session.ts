@@ -1,7 +1,9 @@
 import { TypedEventTarget } from '@remix-run/interaction'
+import type { SseEvent } from './event'
 
 interface SseSessionEventMap {
   disconnected: SseSessionEvent
+  connected: SseSessionEvent
 }
 
 class SseSessionEvent extends Event {
@@ -17,70 +19,96 @@ export interface SseSessionOptions {
   retry?: number
 }
 
-export function createSseSession(request: Request, options: SseSessionOptions) {
-  let signal = request.signal
-  let { readable, writable } = new TransformStream()
-  let writer = writable.getWriter()
-  let connected = false
-  let keepAliveInterval: ReturnType<typeof setInterval> | undefined
-  let lastId = request.headers.get('last-event-id')
-  let events = new TypedEventTarget<SseSessionEventMap>()
+export class SseSession extends TypedEventTarget<SseSessionEventMap> {
+  #signal: AbortSignal
+  #stream: ReadableStream
+  #writer: WritableStreamDefaultWriter
+  #connected: boolean
+  #lastEventId: string | null
+  #keepAliveInterval: ReturnType<typeof setInterval> | null
+  #options: SseSessionOptions
+  #encoder: TextEncoder
 
-  let cleanup = () => {
-    events.dispatchEvent(new SseSessionEvent('disconnected'))
-    connected = false
-    if (keepAliveInterval) {
-      clearInterval(keepAliveInterval)
+  constructor(request: Request, options: SseSessionOptions = {}) {
+    super()
+    this.#options = options
+    let { readable, writable } = new TransformStream()
+    this.#writer = writable.getWriter()
+    this.#stream = readable
+    this.#connected = false
+    this.#signal = request.signal
+    this.#lastEventId = request.headers.get('last-event-id')
+    this.#keepAliveInterval = null
+    this.#encoder = new TextEncoder()
+    this.#signal.addEventListener('abort', this.disconnect.bind(this), { once: true })
+  }
+
+  #write(data: string): void {
+    if (!this.isConnected) throw new Error(`Could not write on disconnected session`)
+    this.#writer.write(this.#encoder.encode(`${data}\n`))
+  }
+
+  #flush(): void {
+    this.#write('')
+  }
+
+  #init(): void {
+    if (this.#options.padding == true) {
+      let padding = ' '.repeat(2049)
+      this.comment(padding)
     }
-    writer.close()
-    signal.removeEventListener('abort', cleanup)
+    if (this.#options.preamble == true) {
+      let preamble = ' '.repeat(2056)
+      this.comment(preamble)
+    }
+    if (this.#options.retry) {
+      this.#write(`retry:${this.#options.retry}`)
+      this.#flush()
+    }
+    if (this.#options.keepAlive) {
+      this.#keepAliveInterval = setInterval(() => {
+        this.comment()
+      }, this.#options.keepAlive)
+    }
   }
 
-  signal.addEventListener('abort', cleanup, { once: true })
-
-  let flush = () => {
-    writer.write('\n')
+  send(event: SseEvent) {
+    for (let line of event.build()) {
+      this.#write(line)
+    }
+    this.#flush()
   }
 
-  if (options.padding == true) {
-    let padding = ' '.repeat(2049)
-    writer.write(`:${padding}\n`)
-    flush()
-  }
-  if (options.preamble == true) {
-    let preamble = ' '.repeat(2056)
-    writer.write(`:${preamble}\n`)
-    flush()
-  }
-  if (options.retry) {
-    writer.write(`retry:${options.retry}\n`)
-    flush()
-  }
-  if (options.keepAlive) {
-    keepAliveInterval = setInterval(() => {
-      writer.write(':\n')
-      flush()
-    }, options.keepAlive)
+  comment(comment: string = '') {
+    this.#write(`: ${comment}`)
+    this.#flush()
   }
 
-  connected = true
-  return Object.assign(events, {
-    stream: readable,
-    push: (event: string, data: string, id: string = crypto.randomUUID()) => {
-      if (!connected) throw new Error(`Could not push on disconnected session`)
-      lastId = id
-      writer.write(`id:${id}\n`)
-      writer.write(`event:${event}\n`)
-      writer.write(`data:${data}\n`)
-      flush()
-    },
-    get lastId() {
-      return lastId
-    },
-    get connected() {
-      return connected
-    },
-  })
+  disconnect() {
+    if (this.#keepAliveInterval) {
+      clearInterval(this.#keepAliveInterval)
+    }
+    this.#signal.removeEventListener('abort', this.disconnect)
+    this.#writer.close()
+    this.dispatchEvent(new SseSessionEvent('disconnected'))
+  }
+
+  get stream(): ReadableStream {
+    this.#connected = true
+    this.#init()
+    this.dispatchEvent(new SseSessionEvent('connected'))
+    return this.#stream
+  }
+
+  get isConnected(): boolean {
+    return this.#connected
+  }
+
+  get lastEventId(): string | null {
+    return this.#lastEventId
+  }
 }
 
-export type SseSession = ReturnType<typeof createSseSession>
+export function createSseSession(request: Request, options: SseSessionOptions = {}) {
+  return new SseSession(request, options)
+}

@@ -1,6 +1,7 @@
 import { formAction, route } from '@remix-run/fetch-router'
 
 export let routes = route({
+  assets: '/assets/*path',
   home: { method: 'GET', pattern: '/' },
   auth: formAction('/auth'),
   chat: route('/chat', {

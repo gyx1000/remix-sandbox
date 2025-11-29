@@ -16,6 +16,8 @@
     "@remix-run/session": "^0.4.0",
     "@remix-run/session-middleware": "^0.1.0",
     "@remix-run/static-middleware": "^0.3.0",
+    "@remix-run/dom": "0.0.0-experimental-remix-jam.6",
+    "@remix-run/events": "0.0.0-experimental-remix-jam.5",
     "@gyx1000/remix-sse": "workspace:*"
   },
   "devDependencies": {
@@ -24,6 +26,7 @@
     "tsx": "^4.20.6"
   },
   "scripts": {
-    "dev": "NODE_ENV=developement tsx watch server.ts"
+    "dev": "NODE_ENV=developement tsx watch server.ts",
+    "dev:browser": "esbuild app/assets/*.tsx --outbase=app/assets --outdir=public/assets --bundle --minify --splitting --format=esm --entry-names='[dir]/[name]' --chunk-names='chunks/[name]-[hash]' --sourcemap --watch"
   }
 }
